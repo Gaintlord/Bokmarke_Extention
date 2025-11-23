@@ -1,5 +1,3 @@
-/*###################### make pop up and extract all the links ####################################*/
-
 //############## popup menu for droping ###############
 const dropbody = document.createElement("div");
 dropbody.contains;
@@ -13,6 +11,7 @@ dropbody.style.display = "none";
 dropbody.style.justifyContent = "center";
 dropbody.style.alignContent = "center";
 dropbody.style.zIndex = "999";
+
 //########## background and styling ############
 const runtime =
   typeof browser === "undefined" ? chrome.runtime : browser.runtime;
@@ -20,51 +19,77 @@ const cloudopng = document.createElement("img");
 cloudopng.src = runtime.getURL("/images/Space.png");
 cloudopng.style.objectFit = "contain";
 cloudopng.style.borderRadius = "12px";
-
 dropbody.appendChild(cloudopng);
 document.body.appendChild(dropbody);
+// ######### Setting Tags ###########
+
+window.addEventListener("message", (e) => {
+  console.log("message recieved", e);
+  if (e.origin !== "http://localhost:5173") {
+    return;
+  }
+  if (e.data?.type !== "set_tags") {
+    return;
+  }
+  const runtime =
+    typeof browser === "undefined" ? chrome.runtime : browser.runtime;
+
+  runtime.sendMessage({
+    action: "SetTags",
+    tagData: {
+      ac_tags: e.data.ac_tag,
+      dr_tags: e.data.dr_tag,
+    },
+  });
+});
+
 //############## variable ####################3
 
 let elememt = null;
-let link = null;
-let image = null;
 
 const WinWidth = window.screen.width;
 
-function LinknImg(elememt) {
-  // #### parent =  <a> and element = <img>
-  if (elememt.tagName === "IMG") {
-    let parent = elememt.parentElement;
-    if (parent.tagName === "A") {
-      return {
-        image: elememt.src,
-        link: parent.href,
-      };
-    } else {
-      let i = 0;
-      let link = null;
-      while (i < 8 && parent) {
-        if (parent.querySelector("a")) {
-          let foundtag = parent.querySelector("a");
-          link = foundtag.href;
-          break;
-        }
-        parent = parent.parentElement;
-        i++;
-      }
+function findNearestImg(elememt) {
+  let parent = elememt.parentElement;
+  while (parent) {
+    const img = parent.querySelector("img");
 
-      return {
-        image: elememt.src,
-        link: link,
-      };
+    if (img) {
+      return img;
     }
-  } // #### parent -> child -> grandchild = <img> and element = <a>
-  else {
-    let searchedNode = elememt.querySelector("img");
-    return {
-      image: searchedNode.src,
-      link: elememt.href,
-    };
+    parent = parent.parentElement;
+  }
+  return null;
+}
+function findNearestAnc(elememt) {
+  let parent = elememt.parentElement;
+  while (parent) {
+    const anchor = parent.querySelector("a");
+
+    if (anchor) {
+      return anchor;
+    }
+    parent = parent.parentElement;
+  }
+  return null;
+}
+
+function LinknImg(elememt) {
+  switch (elememt.tagName) {
+    case "IMG": {
+      let anc = findNearestAnc(elememt);
+      return { img: elememt, anc: anc };
+    }
+    case "A": {
+      let img = findNearestImg(elememt);
+      return { img: img, anc: elememt };
+    }
+
+    default: {
+      let img = findNearestImg(elememt);
+      let anc = findNearestAnc(elememt);
+      return { img: img, anc: anc };
+    }
   }
 }
 
@@ -77,6 +102,8 @@ function MousePos(xcor) {
   }
 }
 
+let icon = null;
+
 document.addEventListener("dragstart", (e) => {
   let leftpos = MousePos(e.clientX);
   console.log(leftpos);
@@ -84,9 +111,8 @@ document.addEventListener("dragstart", (e) => {
   dropbody.style.left = `${leftpos}px`;
   dropbody.style.display = "flex";
   elememt = e.target;
-  console.log("##############################");
   console.log(elememt);
-  console.log("##############################");
+  console.log(window.location.href);
 });
 
 document.addEventListener("dragend", (e) => {
@@ -97,18 +123,20 @@ document.addEventListener("dragover", (e) => {
 });
 
 document.addEventListener("drop", (e) => {
-  const data = LinknImg(elememt);
+  const { img, anc } = LinknImg(elememt);
+  console.log(img);
+  console.log(anc);
+  console.log(icon);
   const runtime =
     typeof browser === "undefined" ? chrome.runtime : browser.runtime;
   runtime.sendMessage({
-    link: data.link,
-    image: data.image,
+    action: "PostServer",
+    bokmarkeData: {
+      userBokmarke: {
+        image: img.src,
+        link: anc.href,
+        hostName: `${window.location.hostname}`,
+      },
+    },
   });
-  console.log(
-    "########################################### Message sent to your prfile ##############################"
-  );
-});
-
-document.addEventListener("dragend", (e) => {
-  dropbody.style.display = "none";
 });
