@@ -1,27 +1,20 @@
-//############## popup menu for droping ###############
-const dropbody = document.createElement("div");
-dropbody.contains;
-dropbody.style.position = "fixed";
-
-dropbody.style.backgroundColor = "black";
-dropbody.style.height = "125px";
-dropbody.style.width = "125px";
-dropbody.style.borderRadius = "10px";
-dropbody.style.display = "none";
-dropbody.style.justifyContent = "center";
-dropbody.style.alignContent = "center";
-dropbody.style.zIndex = "999";
-
-//########## background and styling ############
 const runtime =
   typeof browser === "undefined" ? chrome.runtime : browser.runtime;
-const cloudopng = document.createElement("img");
-cloudopng.src = runtime.getURL("/images/Space.png");
-cloudopng.style.objectFit = "contain";
-cloudopng.style.borderRadius = "12px";
-dropbody.appendChild(cloudopng);
-document.body.appendChild(dropbody);
-// ######### Setting Tags ###########
+
+// !!!!!!!!!!!        spriteAnimation         !!!!!!!!!!!!!!!!!;
+const frameDiv = document.createElement("div");
+frameDiv.style.width = "128px";
+frameDiv.style.height = "128px";
+frameDiv.style.position = "fixed";
+frameDiv.style.display = "none";
+frameDiv.style.backgroundImage = `url(${runtime.getURL(
+  "/images/chesta256.png"
+)})`;
+frameDiv.style.backgroundRepeat = "no-repeat";
+frameDiv.style.backgroundPositionX = "-64px";
+frameDiv.style.backgroundPositionY = "-64px";
+frameDiv.style.zIndex = "999";
+(document.body || document.documentElement).append(frameDiv);
 
 window.addEventListener("message", (e) => {
   console.log("message recieved", e);
@@ -40,7 +33,38 @@ window.addEventListener("message", (e) => {
       ac_tags: e.data.ac_tag,
       dr_tags: e.data.dr_tag,
     },
-  });
+  }).catch(() => {});
+});
+
+function showSessionExpiredPopup() {
+  if (document.getElementById("inshare-session-expired")) {
+    return;
+  }
+  const popup = document.createElement("div");
+  popup.id = "inshare-session-expired";
+  popup.textContent = "your bookmark session expired please sign in again";
+  popup.style.position = "fixed";
+  popup.style.top = "24px";
+  popup.style.left = "50%";
+  popup.style.transform = "translateX(-50%)";
+  popup.style.zIndex = "2147483647";
+  popup.style.background = "#111";
+  popup.style.color = "#fff";
+  popup.style.padding = "14px 22px";
+  popup.style.borderRadius = "10px";
+  popup.style.fontFamily = "system-ui, sans-serif";
+  popup.style.fontSize = "14px";
+  popup.style.boxShadow = "0 4px 18px rgba(0,0,0,.5)";
+  popup.style.cursor = "pointer";
+  popup.addEventListener("click", () => popup.remove());
+  (document.body || document.documentElement).append(popup);
+  setTimeout(() => popup.remove(), 6000);
+}
+
+runtime.onMessage.addListener((message) => {
+  if (message.action === "SessionExpired") {
+    showSessionExpiredPopup();
+  }
 });
 
 //############## variable ####################3
@@ -94,49 +118,82 @@ function LinknImg(elememt) {
 }
 
 function MousePos(xcor) {
-  let requireWid = 4 * (WinWidth / 5);
+  let requireWid = 9 * (WinWidth / 10);
   if (xcor > requireWid) {
     return xcor - 175;
   } else {
-    return xcor + 50;
+    return xcor + 100;
   }
 }
 
-let icon = null;
+function animateChest(rectX, rectY) {
+  document.addEventListener("drag", (e) => {
+    let dx = rectX - e.clientX;
+    let dy = e.clientY - rectY;
 
+    if (dx < 0 && dx > -96 && dy > 32 && dy < 128) {
+      frameDiv.style.backgroundPositionX = "-1344px";
+    } else {
+      frameDiv.style.backgroundPositionX = "-64px";
+    }
+  });
+}
+
+let icon = null;
+let timeout;
+let frameX;
+let frameY;
 document.addEventListener("dragstart", (e) => {
-  let leftpos = MousePos(e.clientX);
-  console.log(leftpos);
-  dropbody.style.top = `${e.clientY - 50}px`;
-  dropbody.style.left = `${leftpos}px`;
-  dropbody.style.display = "flex";
+  frameX = MousePos(e.clientX);
+  frameY = e.clientY - 128;
+  frameDiv.style.top = `${frameY}px`;
+  frameDiv.style.left = `${frameX}px`;
+  frameDiv.style.display = "flex";
+  timeout = setTimeout(() => {
+    frameDiv.style.display = "none";
+  }, 3500);
   elememt = e.target;
-  console.log(elememt);
-  console.log(window.location.href);
+  animateChest(frameX, frameY);
 });
 
+let chestClose;
 document.addEventListener("dragend", (e) => {
-  dropbody.style.display = "none";
+  frameDiv.style.backgroundPositionX = "-64px";
+  chestClose = setTimeout(() => {
+    frameDiv.style.display = "none";
+  }, 200);
+  clearTimeout(timeout);
 });
 document.addEventListener("dragover", (e) => {
   e.preventDefault();
 });
 
 document.addEventListener("drop", (e) => {
-  const { img, anc } = LinknImg(elememt);
-  console.log(img);
-  console.log(anc);
-  console.log(icon);
-  const runtime =
-    typeof browser === "undefined" ? chrome.runtime : browser.runtime;
-  runtime.sendMessage({
-    action: "PostServer",
-    bokmarkeData: {
-      userBokmarke: {
-        image: img.src,
-        link: anc.href,
-        hostName: `${window.location.hostname}`,
-      },
-    },
-  });
+  if (
+    e.clientX >= frameX &&
+    e.clientX <= frameX + 100 &&
+    e.clientY >= frameY + 28 &&
+    e.clientY <= frameY + 128
+  ) {
+    const { img, anc } = LinknImg(elememt);
+    if (!img || !anc) {
+      clearTimeout(chestClose);
+      return;
+    }
+    runtime
+      .sendMessage({
+        action: "PostServer",
+        bokmarkeData: {
+          userBokmarke: {
+            image: img.src,
+            link: anc.href,
+            hostName: `${window.location.hostname}`,
+          },
+        },
+      })
+      .catch(() => {});
+  } else {
+  }
+
+  clearTimeout(chestClose);
 });

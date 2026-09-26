@@ -8,7 +8,8 @@
   },
 
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
   },
   "content_scripts": [
     {
@@ -28,7 +29,7 @@
 
   "web_accessible_resources": [
     {
-      "resources": ["/images/Space.png"],
+      "resources": ["/images/chesta256.png"],
       "matches": ["<all_urls>"]
     }
   ],
@@ -36,7 +37,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "inshare@example.com",
-      "strict_min_version": "109.0"
+      "strict_min_version": "121.0"
     }
   }
 }
