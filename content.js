@@ -126,17 +126,17 @@ function MousePos(xcor) {
   }
 }
 
-function animateChest(rectX, rectY) {
-  document.addEventListener("drag", (e) => {
-    let dx = rectX - e.clientX;
-    let dy = e.clientY - rectY;
+let isChestActive = false;
 
-    if (dx < 0 && dx > -96 && dy > 32 && dy < 128) {
-      frameDiv.style.backgroundPositionX = "-1344px";
-    } else {
-      frameDiv.style.backgroundPositionX = "-64px";
-    }
-  });
+function animateChest(xcor, ycor) {
+  let dx = frameX - xcor;
+  let dy = ycor - frameY;
+
+  if (dx < 0 && dx > -96 && dy > 32 && dy < 128) {
+    frameDiv.style.backgroundPositionX = "-1344px";
+  } else {
+    frameDiv.style.backgroundPositionX = "-64px";
+  }
 }
 
 let icon = null;
@@ -144,6 +144,15 @@ let timeout;
 let frameX;
 let frameY;
 document.addEventListener("dragstart", (e) => {
+  // Firefox requires drag data to be set during dragstart, otherwise
+  // subsequent drag/dragend events never fire.
+  if (e.dataTransfer) {
+    e.dataTransfer.setData(
+      "text/plain",
+      e.target?.src || e.target?.href || "inshare"
+    );
+  }
+  isChestActive = true;
   frameX = MousePos(e.clientX);
   frameY = e.clientY - 128;
   frameDiv.style.top = `${frameY}px`;
@@ -153,11 +162,11 @@ document.addEventListener("dragstart", (e) => {
     frameDiv.style.display = "none";
   }, 3500);
   elememt = e.target;
-  animateChest(frameX, frameY);
 });
 
 let chestClose;
 document.addEventListener("dragend", (e) => {
+  isChestActive = false;
   frameDiv.style.backgroundPositionX = "-64px";
   chestClose = setTimeout(() => {
     frameDiv.style.display = "none";
@@ -166,6 +175,12 @@ document.addEventListener("dragend", (e) => {
 });
 document.addEventListener("dragover", (e) => {
   e.preventDefault();
+  // Firefox reports clientX/clientY as 0 on "drag" events (bug 505521),
+  // so the open/close state is driven by "dragover" which has valid coords.
+  if (!isChestActive) {
+    return;
+  }
+  animateChest(e.clientX, e.clientY);
 });
 
 document.addEventListener("drop", (e) => {
