@@ -8,7 +8,7 @@ frameDiv.style.height = "128px";
 frameDiv.style.position = "fixed";
 frameDiv.style.display = "none";
 frameDiv.style.backgroundImage = `url(${runtime.getURL(
-  "/images/chesta256.png"
+  "/images/chesta256.png",
 )})`;
 frameDiv.style.backgroundRepeat = "no-repeat";
 frameDiv.style.backgroundPositionX = "-64px";
@@ -18,7 +18,10 @@ frameDiv.style.zIndex = "999";
 
 window.addEventListener("message", (e) => {
   console.log("message recieved", e);
-  if (e.origin !== "http://localhost:5173") {
+  if (e.origin !== "http://bokmarke.world") {
+    return;
+  }
+  if (e.origin !== "https://bokmarke.world") {
     return;
   }
   if (e.data?.type !== "set_tags") {
@@ -27,13 +30,15 @@ window.addEventListener("message", (e) => {
   const runtime =
     typeof browser === "undefined" ? chrome.runtime : browser.runtime;
 
-  runtime.sendMessage({
-    action: "SetTags",
-    tagData: {
-      ac_tags: e.data.ac_tag,
-      dr_tags: e.data.dr_tag,
-    },
-  }).catch(() => {});
+  runtime
+    .sendMessage({
+      action: "SetTags",
+      tagData: {
+        ac_tags: e.data.ac_tag,
+        dr_tags: e.data.dr_tag,
+      },
+    })
+    .catch(() => {});
 });
 
 function showSessionExpiredPopup() {
@@ -149,7 +154,7 @@ document.addEventListener("dragstart", (e) => {
   if (e.dataTransfer) {
     e.dataTransfer.setData(
       "text/plain",
-      e.target?.src || e.target?.href || "inshare"
+      e.target?.src || e.target?.href || "inshare",
     );
   }
   isChestActive = true;

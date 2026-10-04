@@ -2,7 +2,7 @@ const runtime =
   typeof browser === "undefined" ? chrome.runtime : browser.runtime;
 
 async function sendBokmarkeData(accessToken, bokmarkeDataObj) {
-  const resp = await fetch(`http://192.168.1.33:3000/api/v1/storelink`, {
+  const resp = await fetch(`https://bokmarke.world/api/v1/storelink`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -61,7 +61,7 @@ runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         let refreshToken = await browserCtx.storage.local.get("refreshToken");
         console.log(refreshToken);
         const respForAccess = await fetch(
-          `http://192.168.1.33:3000/api/v1/auth/refresh?tags=${refreshToken.refreshToken}`,
+          `https://bokmarke.world/api/v1/auth/refresh?tags=${refreshToken.refreshToken}`,
         );
 
         let newAccessToken = respForAccess.headers.get("N_AT");
