@@ -18,13 +18,13 @@
     }
   ],
 
-  "permissions": ["storage", "tabs", "scripting"],
+  "permissions": ["storage", "tabs", "scripting", "cookies"],
   "host_permissions": ["<all_urls>"],
 
   "icons": {
-    "16": "/images/Atlas16.png",
-    "32": "/images/Atlas32.png",
-    "128": "/images/Atlas128.png"
+    "16": "/images/bokmarke16.png",
+    "32": "/images/bokmarke32.png",
+    "128": "/images/bokmarke128.png"
   },
 
   "web_accessible_resources": [

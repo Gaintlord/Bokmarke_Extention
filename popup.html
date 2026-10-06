@@ -1,19 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Inshare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald&family=SUSE+Mono:ital,wght@0,100..800;1,100..800&family=SUSE:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="loginpage"></div>
-    <div class="shared"></div>
-    <div class="mainpage">
-      <img id="logo" src="./images/Atlas128.png" alt="Logo" />
+    <div class="panel gradient">
+      <section id="guest-view" class="view" hidden>
+        <img id="logo" src="./images/Squarelogo.png" alt="Inshare" />
+        <button id="login-btn" class="gradientborder" type="button">
+          Login
+        </button>
+      </section>
 
-      <button>SignUp</button>
-      <button>Create Group</button>
+      <section id="bookmark-view" class="view" hidden>
+        <div id="sites" class="sites"></div>
+      </section>
+
+      <p id="loading" class="state">Loading your bookmarks…</p>
+      <p id="empty" class="state" hidden>No bookmarks yet.</p>
+      <p id="error" class="state" hidden>Couldn’t load your bookmarks.</p>
     </div>
+    <script src="popup.js"></script>
   </body>
 </html>

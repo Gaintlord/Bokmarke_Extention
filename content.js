@@ -16,12 +16,18 @@ frameDiv.style.backgroundPositionY = "-64px";
 frameDiv.style.zIndex = "999";
 (document.body || document.documentElement).append(frameDiv);
 
+const ALLOWED_ORIGINS = [
+  "https://bokmarke.world",
+  "http://bokmarke.world",
+  "http://localhost:5173",
+];
+
 window.addEventListener("message", (e) => {
   console.log("message recieved", e);
-  if (e.origin !== "http://bokmarke.world") {
+  if (!ALLOWED_ORIGINS.includes(e.origin)) {
     return;
   }
-  if (e.origin !== "https://bokmarke.world") {
+  if (e.source !== window) {
     return;
   }
   if (e.data?.type !== "set_tags") {
