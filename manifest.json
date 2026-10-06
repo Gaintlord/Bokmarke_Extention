@@ -1,7 +1,7 @@
 {
-  "name": "Inshare",
-  "description": "share your link for everyone to admire",
-  "version": "1.0.0",
+  "name": "Bokmarke",
+  "description": "Gat all your links at one place",
+  "version": "2.0.0",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html"
