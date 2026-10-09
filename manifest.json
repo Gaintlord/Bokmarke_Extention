@@ -18,7 +18,7 @@
     }
   ],
 
-  "permissions": ["storage", "tabs", "scripting", "cookies"],
+  "permissions": ["storage", "tabs", "cookies"],
   "host_permissions": ["<all_urls>"],
 
   "icons": {
